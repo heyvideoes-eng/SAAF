@@ -58,11 +58,6 @@ initDB();
 connectDB();
 initSensorJob();
 
-// Root route
-app.get('/', (req, res) => {
-  res.json({ message: 'SAAF Intelligence Gateway is running.', docs: '/api/health' });
-});
-
 // Health Check
 app.get('/api/health', (_req, res) => {
   res.json({ 
