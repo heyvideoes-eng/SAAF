@@ -7,8 +7,6 @@ import { useToast } from '../context/ToastContext';
 const BudgetPortal: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const [isLoading] = useState(false);
-
   // Simulated Budget Data
   const data = useMemo(() => ({
     summary: {

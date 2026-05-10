@@ -6,11 +6,17 @@ export interface FacilityData {
   id: number;
   name: string;
   location: string;
+  lat?: number;
+  lng?: number;
+  type?: string;
   current_status: 'GREEN' | 'AMBER' | 'RED';
   health: {
     verification_photo?: string;
     last_cleaned_at?: string;
     cleanliness_score?: number;
+    ammonia?: number;
+    humidity?: number;
+    last_reading?: string;
   };
   wait_time?: number;
   rating?: number | null;

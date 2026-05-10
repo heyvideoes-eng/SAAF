@@ -1,16 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Zap, Filter, Map as MapIcon, List, 
-  Info, Clock, Star, AlertCircle, Camera, Check, 
+  Zap, Map as MapIcon, List, 
+  Info, Clock, Star, Camera, Check, 
   Users, Activity, ShieldCheck, MapPin 
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useLiveData } from '../context/LiveDataContext';
 import { useSearch } from '../context/SearchContext';
 import FacilityMap from '../components/Map/FacilityMap';
 import FacilityCard from '../components/UI/FacilityCard';
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
   const { facilities, recommendation, isLive, lastUpdated } = useLiveData();
   const { searchQuery } = useSearch();
   const [viewMode, setViewMode] = useState<'MAP' | 'LIST'>('MAP');

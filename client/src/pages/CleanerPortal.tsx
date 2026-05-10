@@ -22,8 +22,6 @@ const CleanerPortal: React.FC = () => {
     showToast('Service window started', 'info');
   };
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const handleComplete = async () => {
     showToast('Submitting service report...', 'info');
     setTimeout(() => {

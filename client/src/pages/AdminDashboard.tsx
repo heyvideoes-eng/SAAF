@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Activity, AlertCircle, CheckCircle, Clock, 
   MapPin, Plus, Filter, Layout, ArrowLeft,
-  Users, Shield
+  Shield
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveData } from '../context/LiveDataContext';

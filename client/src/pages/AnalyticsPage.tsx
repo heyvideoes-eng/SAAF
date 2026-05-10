@@ -5,8 +5,6 @@ import { useNavigate } from 'react-router-dom';
 
 const AnalyticsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoading] = useState(false);
-
   // Simulated Analytics Data
   const heatmap = useMemo(() => {
     return Array.from({ length: 168 }).map((_, i) => ({

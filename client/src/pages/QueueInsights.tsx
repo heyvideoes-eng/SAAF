@@ -2,10 +2,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Zap, Clock, Activity, ShieldCheck, 
-  MapPin, Users, Camera, Check, 
-  ArrowRight, Info, AlertCircle, BarChart3,
+  MapPin, Users,
+  ArrowRight, BarChart3,
   TrendingUp, Smartphone, QrCode, Search,
-  ChevronRight, Loader2, RefreshCw
+  ChevronRight, RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveData } from '../context/LiveDataContext';
@@ -217,7 +217,7 @@ const QueueInsights: React.FC = () => {
               >
                 <div className="flex items-center justify-between mb-8">
                   <div className={`p-3 rounded-2xl transition-colors ${step.active ? 'bg-premium-accent/10' : 'bg-white/5'}`}>
-                    {React.cloneElement(step.icon as React.ReactElement, { 
+                    {React.cloneElement(step.icon as React.ReactElement<any>, { 
                       className: step.active ? "text-premium-accent" : "text-premium-muted",
                       size: 20 
                     })}
@@ -286,22 +286,22 @@ const QueueInsights: React.FC = () => {
 
                   {/* Hardware Traffic Light */}
                   <div className="flex gap-4 mb-14 justify-center">
-                     <div className={`w-16 h-3 rounded-full transition-all duration-700 ${activeUnit && activeUnit.occupancy < 60 ? 'bg-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.7)]' : 'bg-white/5'}`} />
-                     <div className={`w-16 h-3 rounded-full transition-all duration-700 ${activeUnit && activeUnit.occupancy >= 60 && activeUnit.occupancy < 85 ? 'bg-status-attention shadow-[0_0_25px_rgba(245,158,11,0.7)]' : 'bg-white/5'}`} />
-                     <div className={`w-16 h-3 rounded-full transition-all duration-700 ${activeUnit && activeUnit.occupancy >= 85 ? 'bg-status-issue shadow-[0_0_25px_rgba(239,68,68,0.7)]' : 'bg-white/5'}`} />
+                     <div className={`w-16 h-3 rounded-full transition-all duration-700 ${activeUnit && (activeUnit.occupancy ?? 0) < 60 ? 'bg-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.7)]' : 'bg-white/5'}`} />
+                     <div className={`w-16 h-3 rounded-full transition-all duration-700 ${activeUnit && (activeUnit.occupancy ?? 0) >= 60 && (activeUnit.occupancy ?? 0) < 85 ? 'bg-status-attention shadow-[0_0_25px_rgba(245,158,11,0.7)]' : 'bg-white/5'}`} />
+                     <div className={`w-16 h-3 rounded-full transition-all duration-700 ${activeUnit && (activeUnit.occupancy ?? 0) >= 85 ? 'bg-status-issue shadow-[0_0_25px_rgba(239,68,68,0.7)]' : 'bg-white/5'}`} />
                   </div>
 
                   <div className="space-y-10">
                      <div className="flex justify-between items-baseline border-b border-white/5 pb-8">
                         <span className="text-[12px] font-bold text-premium-muted uppercase tracking-widest">Wait Time</span>
                         <span className="text-5xl font-bold text-white tracking-tighter">
-                          {activeUnit?.wait_time && activeUnit.wait_time !== 'NaN' ? `${String(activeUnit.wait_time).padStart(2, '0')} MIN` : '00 MIN'}
+                          {activeUnit?.wait_time !== undefined && !isNaN(activeUnit.wait_time) ? `${String(activeUnit.wait_time).padStart(2, '0')} MIN` : '00 MIN'}
                         </span>
                      </div>
                      <div className="flex justify-between items-baseline border-b border-white/5 pb-8">
                         <span className="text-[12px] font-bold text-premium-muted uppercase tracking-widest">Occupancy</span>
-                        <span className={`text-5xl font-bold tracking-tighter ${activeUnit && activeUnit.occupancy >= 85 ? 'text-status-issue' : 'text-white'}`}>
-                          {activeUnit?.occupancy || 0}%
+                        <span className={`text-5xl font-bold tracking-tighter ${activeUnit && (activeUnit.occupancy ?? 0) >= 85 ? 'text-status-issue' : 'text-white'}`}>
+                          {activeUnit?.occupancy ?? 0}%
                         </span>
                      </div>
                      <div className="flex justify-between items-baseline">
@@ -339,13 +339,13 @@ const QueueInsights: React.FC = () => {
                <TrendingUp className="text-status-attention mb-6" size={24} />
                <h4 className="text-lg font-bold text-premium-text mb-2 tracking-tight">Expected Rush</h4>
                <p className="text-xs text-premium-muted mb-8 leading-relaxed">
-                 {recommendation?.best && recommendation.best.occupancy > 70 
+                 {recommendation?.best && (recommendation.best.occupancy ?? 0) > 70 
                    ? `High density detected at ${recommendation.best.name?.split(' – ')[0] || 'Unit'}. Alternative routing advised.`
                    : "Traffic patterns indicate a 15% increase in the next 20 mins based on transit arrivals."}
                </p>
-               <div className={`flex items-center gap-2 px-4 py-2 border rounded-full w-fit ${recommendation?.best && recommendation.best.occupancy > 70 ? 'bg-status-issue/10 border-status-issue/30 text-status-issue shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'bg-status-attention/10 border-status-attention/30 text-status-attention shadow-[0_0_15px_rgba(245,158,11,0.2)]'}`}>
+               <div className={`flex items-center gap-2 px-4 py-2 border rounded-full w-fit ${recommendation?.best && (recommendation.best.occupancy ?? 0) > 70 ? 'bg-status-issue/10 border-status-issue/30 text-status-issue shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'bg-status-attention/10 border-status-attention/30 text-status-attention shadow-[0_0_15px_rgba(245,158,11,0.2)]'}`}>
                   <span className="text-[10px] font-bold uppercase tracking-widest">
-                    {recommendation?.best && recommendation.best.occupancy > 70 ? "Alternative Suggested" : "Rush in 15 mins"}
+                    {recommendation?.best && (recommendation.best.occupancy ?? 0) > 70 ? "Alternative Suggested" : "Rush in 15 mins"}
                   </span>
                </div>
                <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-10 transition-opacity">
@@ -366,17 +366,17 @@ const QueueInsights: React.FC = () => {
                <div className="space-y-5">
                   <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
                      <span className="text-premium-subtle">Usage Intensity</span>
-                     <span className="text-premium-text">{activeUnit?.occupancy || 0}%</span>
+                     <span className="text-premium-text">{activeUnit?.occupancy ?? 0}%</span>
                   </div>
                   <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
                      <motion.div 
                         initial={{ width: 0 }}
-                        animate={{ width: `${activeUnit?.occupancy || 0}%` }}
-                        className={`h-full transition-all duration-1000 ${activeUnit && activeUnit.occupancy > 80 ? 'bg-status-issue shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]'}`} 
+                        animate={{ width: `${activeUnit?.occupancy ?? 0}%` }}
+                        className={`h-full transition-all duration-1000 ${activeUnit && (activeUnit.occupancy ?? 0) > 80 ? 'bg-status-issue shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]'}`} 
                      />
                   </div>
                   <p className="text-[10px] text-premium-muted uppercase font-bold tracking-[0.2em]">
-                    {activeUnit && activeUnit.occupancy > 80 ? "Cleaning alert generated" : "Surface health: Optimal"}
+                    {activeUnit && (activeUnit.occupancy ?? 0) > 80 ? "Cleaning alert generated" : "Surface health: Optimal"}
                   </p>
                </div>
             </motion.div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, MapPin, Activity, Shield, PieChart, IndianRupee, User, Menu } from 'lucide-react';
+import { Search, Activity, Shield, PieChart, IndianRupee, User, Menu } from 'lucide-react';
 import { useSearch } from '../../context/SearchContext';
 
 const Navbar: React.FC = () => {
