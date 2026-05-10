@@ -1,16 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Shield, User, ClipboardCheck, ArrowRight } from 'lucide-react';
+import { Shield, User, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleEntry = (role: 'admin' | 'cleaner', path: string) => {
+  const handleEntry = (_role: 'admin' | 'cleaner', path: string) => {
     // Open Access Simulation
-    login('admin@saaf.local', 'Admin@123');
+    login({ email: 'admin@saaf.local', password: 'Admin@123' }).catch(console.error);
     navigate(path);
   };
 

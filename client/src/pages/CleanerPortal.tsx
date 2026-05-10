@@ -4,13 +4,11 @@ import { User, MapPin, ArrowRight, Camera, CheckCircle2, Package, PlayCircle, Lo
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useLiveData } from '../context/LiveDataContext';
-import { useNavigate } from 'react-router-dom';
 
 const CleanerPortal: React.FC = () => {
   const { user, logout } = useAuth();
   const { showToast } = useToast();
   const { facilities } = useLiveData();
-  const navigate = useNavigate();
   
   const [activeTask, setActiveTask] = useState<any>(null);
   const [taskStatus, setTaskStatus] = useState<'IDLE' | 'IN_PROGRESS' | 'RESTOCKING' | 'VERIFYING'>('IDLE');

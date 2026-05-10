@@ -90,7 +90,7 @@ export const LiveDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       const API_URL = getApiURL();
       const token = localStorage.getItem('saaf_token');
-      const authHeader = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const authHeader: HeadersInit = token ? { 'Authorization': `Bearer ${token}` } : {};
       
       // Basic Data
       const [facRes, recRes] = await Promise.all([

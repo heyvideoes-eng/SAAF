@@ -4,7 +4,7 @@ import { Shield, Zap, TrendingUp, ChevronDown, AlertCircle, Clock } from 'lucide
 import { useLiveData } from '../../context/LiveDataContext';
 
 const InteractiveHero: React.FC<{ onOpenDeepDive: () => void }> = ({ onOpenDeepDive }) => {
-  const { facilities, isLive, lastUpdated, globalStats } = useLiveData();
+  const { facilities, isLive, globalStats } = useLiveData();
 
   const stats = useMemo(() => {
     const totalHubs = facilities.length;

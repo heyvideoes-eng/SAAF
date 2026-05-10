@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Activity, AlertTriangle, Clock, TrendingUp, ShieldCheck, PieChart, Users } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useLiveData } from '../../context/LiveDataContext';
 
 interface DeepDiveProps {
@@ -10,7 +10,7 @@ interface DeepDiveProps {
 }
 
 const DeepDive: React.FC<DeepDiveProps> = ({ isOpen, onClose }) => {
-  const { alerts, facilities, globalStats, govtMode, budgetSummary, wardPerformance, contractorPerformance } = useLiveData();
+  const { alerts, globalStats, govtMode, budgetSummary, wardPerformance, contractorPerformance } = useLiveData();
 
   const chartData = [
     { time: '00:00', ammonia: 12, users: 40 },
@@ -181,10 +181,10 @@ const DeepDive: React.FC<DeepDiveProps> = ({ isOpen, onClose }) => {
                             <div className="space-y-3">
                                <div className="flex justify-between items-center">
                                   <span className="text-[9px] text-atmosTextSubtle uppercase font-bold tracking-widest">SLA Compliance</span>
-                                  <span className="text-xs font-bold text-atmosAccent">{c.avg_score?.toFixed(1)}%</span>
+                                  <span className="text-xs font-bold text-atmosAccent">{c.avg_compliance?.toFixed(1)}%</span>
                                </div>
                                <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                                  <div className="h-full bg-atmosAccent transition-all" style={{ width: `${c.avg_score}%` }} />
+                                  <div className="h-full bg-atmosAccent transition-all" style={{ width: `${c.avg_compliance}%` }} />
                                </div>
                                <div className="flex justify-between text-[8px] text-atmosTextMuted font-bold uppercase tracking-widest pt-1">
                                   <span>{c.managed_facilities} Units</span>

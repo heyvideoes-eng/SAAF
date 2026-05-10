@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle, AlertCircle, Info, X } from 'lucide-react';
 
-type ToastType = 'success' | 'error' | 'info';
+type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 interface Toast {
   id: string;
@@ -45,6 +45,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               className={`pointer-events-auto flex items-center gap-4 px-6 py-4 rounded-2xl backdrop-blur-2xl border shadow-2xl min-w-[320px] ${
                 toast.type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-500' :
                 toast.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
+                toast.type === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' :
                 'bg-blue-500/10 border-blue-500/20 text-blue-400'
               }`}
             >

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import SceneCanvas from '../components/Three/SceneCanvas';
 import FacilityGrid from '../components/UI/FacilityGrid';
 import Footer from '../components/Layout/Footer';
@@ -6,7 +6,7 @@ import InteractiveHero from '../components/Three/ScrollChapters';
 import DeepDive from '../components/UI/DeepDive';
 import { useLiveData } from '../context/LiveDataContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Camera, CheckCircle2, ShieldCheck, MapPin, TrendingUp } from 'lucide-react';
+import { Plus, Camera, ShieldCheck, Zap } from 'lucide-react';
 
 const HomeContent: React.FC = () => {
   const { 

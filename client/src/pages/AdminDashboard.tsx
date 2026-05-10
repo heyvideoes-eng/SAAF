@@ -9,7 +9,7 @@ import Skeleton from '../components/UI/Skeleton';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { facilities, isLive, govtMode } = useLiveData();
+  const { facilities, isLive, govtMode: _govtMode } = useLiveData();
   const { showToast } = useToast();
   const [overview, setOverview] = useState<any>(null);
   const [alerts, setAlerts] = useState<any[]>([]);

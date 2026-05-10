@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { Clock, Accessibility, MapPin, Zap, ShieldCheck } from 'lucide-react';
+import { Clock, MapPin, Zap, ShieldCheck } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 import QueueBar from './QueueBar';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,8 @@ export interface FacilityData {
     ammonia: number;
     humidity: number;
     last_reading?: string;
+    verification_photo?: string;
+    last_cleaned_at?: string;
   };
   occupancy: number;
   wait_time: number;
@@ -130,14 +132,14 @@ const FacilityCard: React.FC<{ facility: FacilityData }> = ({ facility }) => {
               <span>Hygiene Index</span>
               <span className="text-atmosAccent">{getCleanlinessScore().toFixed(0)}%</span>
             </div>
-            <QueueBar value={getCleanlinessScore()} color="accent" />
+            <QueueBar progress={getCleanlinessScore()} label="Hygiene Index" value={`${getCleanlinessScore().toFixed(0)}%`} />
           </div>
           <div className="space-y-1.5">
             <div className="flex justify-between text-[8px] font-bold uppercase tracking-widest text-atmosTextMuted">
               <span>Crowd Pressure</span>
               <span className="text-atmosTextSubtle">{facility.occupancy || 0} Users</span>
             </div>
-            <QueueBar value={(facility.occupancy / (facility.total_stalls || 10)) * 100} color="subtle" />
+            <QueueBar progress={(facility.occupancy / (facility.total_stalls || 10)) * 100} label="Crowd Pressure" value={`${facility.occupancy || 0} Users`} />
           </div>
         </div>
       </div>
