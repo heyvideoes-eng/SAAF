@@ -11,7 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (credentials: any) => Promise<boolean>;
+  login: (credentials: any) => Promise<any>;
   logout: () => void;
   hasPermission: (action: string, module: string) => boolean;
   isAuthenticated: boolean;
@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(data.user);
     localStorage.setItem('sanitrax_token', data.token);
     localStorage.setItem('sanitrax_user', JSON.stringify(data.user));
-    return true;
+    return data.user;
   };
 
   const logout = () => {

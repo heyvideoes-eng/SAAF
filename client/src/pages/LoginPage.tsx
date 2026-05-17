@@ -15,12 +15,18 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const success = await login({ 
+      const loggedInUser = await login({ 
         username: formData.username, 
         password: formData.password 
       });
-      if (success) {
-        navigate('/dashboard');
+      if (loggedInUser) {
+        if (loggedInUser.role === 'Worker') {
+          navigate('/worker');
+        } else if (['SuperAdmin', 'Supervisor', 'WardAuthority'].includes(loggedInUser.role)) {
+          navigate('/authority');
+        } else {
+          navigate('/public');
+        }
       }
     } catch (err: any) {
       setError(err.message || "Unable to connect to the city hub. Please ensure the server is running.");
