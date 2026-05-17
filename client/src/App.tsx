@@ -25,6 +25,7 @@ import CaseManagement from './pages/authority/CaseManagement';
 
 // Common
 import AnalyticsPage from './pages/AnalyticsPage';
+import AdminDashboard from './pages/AdminDashboard';
 import LoginPage from './pages/LoginPage';
 import LandingPage from './pages/LandingPage';
 import { useAuth } from './context/AuthContext';
@@ -78,6 +79,8 @@ const App: React.FC = () => {
           <Route index element={<AuthorityDashboard />} />
           <Route path="cases" element={<CaseManagement />} />
           <Route path="analytics" element={<AnalyticsPage />} />
+          <Route path="staff" element={<AdminDashboard initialTab="users" isEmbedded={true} />} />
+          <Route path="audit" element={<AdminDashboard initialTab="audit" isEmbedded={true} />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" />} />

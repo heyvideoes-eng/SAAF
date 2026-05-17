@@ -9,12 +9,17 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 
-const AdminDashboard: React.FC = () => {
+interface AdminDashboardProps {
+  initialTab?: 'overview' | 'audit' | 'users' | 'facilities';
+  isEmbedded?: boolean;
+}
+
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'overview', isEmbedded = false }) => {
   const { hasPermission, token } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
   
-  const [activeTab, setActiveTab] = useState<'overview' | 'audit' | 'users' | 'facilities'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'audit' | 'users' | 'facilities'>(initialTab);
   const [data, setData] = useState<any>({ audit: [], users: [], facilities: [] });
   const [loading, setLoading] = useState(false);
 
@@ -22,6 +27,10 @@ const AdminDashboard: React.FC = () => {
     if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
     return window.location.hostname === 'localhost' ? 'http://localhost:4001' : window.location.origin;
   };
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   useEffect(() => {
     if (activeTab !== 'overview') fetchAdminData();
@@ -70,6 +79,91 @@ const AdminDashboard: React.FC = () => {
     { id: 'audit', icon: Database, label: 'Audit Matrix' },
     { id: 'users', icon: Users, label: 'Personnel' }
   ];
+
+  if (isEmbedded) {
+    return (
+      <div className="space-y-12">
+        {/* Embedded Header Controls */}
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-8">
+          <div>
+            <h1 className="text-4xl font-black text-white tracking-tighter">
+              {activeTab === 'users' ? 'Staff Personnel Ledger' : 'Cryptographic Audit Registry'}
+            </h1>
+            <p className="text-sm text-slate-500 font-bold uppercase tracking-widest mt-2">
+              {activeTab === 'users' ? 'Real-time Ward Assignment & Workforce Telemetry' : 'Secured System-wide Ledger of Administrative Actions'}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+             <div className="flex p-1 bg-white/5 rounded-xl border border-white/5">
+                {['ALL', 'ACTIVE', 'STALE'].map(t => (
+                  <button key={t} className={`px-4 py-1.5 rounded-lg text-[10px] font-black tracking-widest ${t === 'ALL' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-white transition-colors'}`}>{t}</button>
+                ))}
+             </div>
+          </div>
+        </div>
+
+        {/* Dynamic Telemetry Table */}
+        <div className="bg-[#0f172a] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl relative min-h-[50vh]">
+           {loading ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-[#0f172a]/80 backdrop-blur-sm z-10">
+                 <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em]">Decrypting Ledger</span>
+                 </div>
+              </div>
+           ) : (
+              <div className="p-10">
+                 <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                       <thead>
+                          <tr className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] bg-black/20">
+                             {activeTab === 'users' && ['ID', 'Personnel Name', 'Assigned Role', 'System Clearance'].map(h => (
+                                <th key={h} className="px-10 py-6">{h}</th>
+                             ))}
+                             {activeTab === 'audit' && ['Audit ID', 'Action Executed', 'Entity Target', 'Authorized Actor'].map(h => (
+                                <th key={h} className="px-10 py-6">{h}</th>
+                             ))}
+                          </tr>
+                       </thead>
+                       <tbody className="divide-y divide-white/5">
+                          {data[activeTab]?.length > 0 ? data[activeTab].map((row: any, i: number) => (
+                             <tr key={i} className="group hover:bg-white/[0.01] transition-colors cursor-pointer">
+                                <td className="px-10 py-8 font-bold text-blue-500">#{row.id || i+1}</td>
+                                <td className="px-10 py-8 text-sm font-bold text-white tracking-tight">
+                                  {activeTab === 'users' ? (row.name || 'Ram Kumar') : (`${row.event_type} [${row.module || 'SYSTEM'}]`)}
+                                </td>
+                                <td className="px-10 py-8">
+                                   <span className={`px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest ${
+                                      (row.role_name || row.actor_role) === 'SuperAdmin' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
+                                      (row.role_name || row.actor_role) === 'Supervisor' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' :
+                                      'bg-blue-500/10 border-blue-500/20 text-blue-500'
+                                   }`}>
+                                      {row.role_name || row.actor_role || 'Worker'}
+                                   </span>
+                                </td>
+                                <td className="px-10 py-8 text-slate-400 font-medium text-xs">
+                                   {activeTab === 'users' 
+                                      ? `${row.ward_assignment || 'General Area'} (${row.username})`
+                                      : `${row.actor_name || 'System'} @ ${row.timestamp}`}
+                                </td>
+                             </tr>
+                          )) : (
+                             <tr>
+                                <td colSpan={4} className="py-24 text-center">
+                                   <Database size={48} className="mx-auto text-slate-800 mb-4" />
+                                   <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No records indexed</p>
+                                </td>
+                             </tr>
+                          )}
+                       </tbody>
+                    </table>
+                 </div>
+              </div>
+           )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#050505] text-white p-6 font-sans selection:bg-blue-500/30">
