@@ -4,12 +4,19 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 dotenv.config();
 
-const openai = new OpenAI({
-  apiKey: process.env.NVIDIA_API_KEY,
-  baseURL: process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1',
-});
+const nvidiaApiKey = process.env.NVIDIA_API_KEY || '';
+
+const openai = nvidiaApiKey
+  ? new OpenAI({
+      apiKey: nvidiaApiKey,
+      baseURL: process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1',
+    })
+  : null;
 
 export const getAIInsights = async (facilityName: string, stats: any) => {
+  if (!openai) {
+    return "Optimizing resource allocation...";
+  }
   try {
     const response = await openai.chat.completions.create({
       model: "meta/llama-3.1-70b-instruct", 
