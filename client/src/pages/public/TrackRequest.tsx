@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { API_URL } from '../../lib/api';
+import { useSocket } from '../../context/SocketContext';
 
 const TrackRequest: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -28,6 +29,8 @@ const TrackRequest: React.FC = () => {
   const queryId = searchParams.get('id');
   
   const [searchId, setSearchId] = useState(queryId || '');
+  const [historyItems, setHistoryItems] = useState<any[]>([]);
+  const { socket } = useSocket();
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
@@ -55,6 +58,34 @@ const TrackRequest: React.FC = () => {
       handleSearch(queryId);
     }
   }, [queryId]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/feedback`);
+        if (response.ok) {
+          const data = await response.json();
+          setHistoryItems(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch feedback history:', err);
+      }
+    };
+
+    fetchHistory();
+
+    socket.on('feedback_submitted', (newFeedback: any) => {
+      setHistoryItems(prev => {
+        // Prevent duplicates
+        if (prev.some(item => item.id === newFeedback.id)) return prev;
+        return [newFeedback, ...prev].slice(0, 50);
+      });
+    });
+
+    return () => {
+      socket.off('feedback_submitted');
+    };
+  }, [socket]);
 
   // Interface configurations
   const isEvidenceView = tab === 'evidence';
@@ -153,27 +184,48 @@ const TrackRequest: React.FC = () => {
                  animate={{ opacity: 1, y: 0 }}
                  className="space-y-6"
                >
-                  {[
-                    { id: 'SAAF-901', title: 'Street Cleaning', date: 'Oct 24, 2023', status: 'VERIFIED' },
-                    { id: 'SAAF-852', title: 'Water Leakage', date: 'Oct 12, 2023', status: 'RESOLVED' },
-                    { id: 'SAAF-743', title: 'Odor Alert', date: 'Sep 28, 2023', status: 'RESOLVED' }
-                  ].map((item, i) => (
-                    <div key={i} className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm flex items-center justify-between group hover:border-blue-500 transition-all">
-                       <div className="flex items-center gap-6">
-                          <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                             <FileText size={24} />
-                          </div>
-                          <div>
-                             <h4 className="text-lg font-black text-slate-900 tracking-tight">{item.title}</h4>
-                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{item.id} • {item.date}</p>
-                          </div>
-                       </div>
-                       <div className="flex items-center gap-4">
-                          <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full">{item.status}</span>
-                          <ChevronRight size={18} className="text-slate-300 group-hover:text-blue-600" />
-                       </div>
+                  {
+                  {historyItems.length === 0 ? (
+                    <div className="bg-white/5 border border-white/10 rounded-[2rem] p-12 text-center text-slate-400">
+                      <Clock size={36} className="mx-auto mb-4 text-slate-500 animate-pulse" />
+                      <p className="text-sm font-black uppercase tracking-widest text-white/40">No transmissions active</p>
                     </div>
-                  ))}
+                  ) : (
+                    historyItems.map((item, i) => (
+                      <div 
+                        key={i} 
+                        onClick={() => {
+                          setSearchId(`SAAF-00${item.id}`);
+                          navigate(`/public/track?id=${item.id}`);
+                        }}
+                        className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm flex items-center justify-between group hover:border-blue-500 transition-all cursor-pointer"
+                      >
+                         <div className="flex items-center gap-6">
+                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                               <FileText size={24} />
+                            </div>
+                            <div>
+                               <h4 className="text-lg font-black text-slate-900 tracking-tight">
+                                 {item.issue_type === 'NONE' ? 'General Report' : item.issue_type}
+                               </h4>
+                               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                 SAAF-00{item.id} • {new Date(item.timestamp || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                               </p>
+                            </div>
+                         </div>
+                         <div className="flex items-center gap-4">
+                            <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${
+                              item.resolution_status === 'RESOLVED' || item.resolution_status === 'VERIFIED'
+                                ? 'bg-emerald-50 text-emerald-500'
+                                : 'bg-amber-50 text-amber-500 animate-pulse'
+                            }`}>
+                              {item.resolution_status || 'OPEN'}
+                            </span>
+                            <ChevronRight size={18} className="text-slate-300 group-hover:text-blue-600" />
+                         </div>
+                      </div>
+                    ))
+                  )}}
                </motion.div>
             )}
 

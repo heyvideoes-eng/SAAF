@@ -5,6 +5,21 @@ import { io } from '../socket.js';
 
 const router = express.Router();
 
+router.get('/', async (req, res) => {
+  try {
+    const feedbackList = db.prepare(`
+      SELECT f.*, fac.name as facility_name, fac.location as facility_location
+      FROM user_feedback f
+      JOIN facilities fac ON f.facility_id = fac.id
+      ORDER BY f.id DESC
+      LIMIT 50
+    `).all();
+    res.json(feedbackList);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/', async (req, res) => {
   try {
     const { facility_id, rating, issue_type, comment, photo_url, lat, lng } = req.body;
@@ -82,6 +97,25 @@ router.post('/', async (req, res) => {
         reason: 'Citizen Complaints'
       });
     }
+
+    // Fetch facility metadata for socket payload
+    const facilityName = (db.prepare('SELECT name FROM facilities WHERE id = ?').get(facility_id) as any)?.name || 'SBM Toilet Hub';
+    const facilityLocation = (db.prepare('SELECT location FROM facilities WHERE id = ?').get(facility_id) as any)?.location || 'Municipal Area';
+
+    io.emit('feedback_submitted', {
+      id: feedbackId,
+      facility_id,
+      rating,
+      issue_type: issue_type || 'NONE',
+      comment: comment || '',
+      photo_url: photo_url || '',
+      resolution_status: 'OPEN',
+      lat: lat || null,
+      lng: lng || null,
+      timestamp,
+      facility_name: facilityName,
+      facility_location: facilityLocation
+    });
 
     res.json({ 
       status: 'success', 

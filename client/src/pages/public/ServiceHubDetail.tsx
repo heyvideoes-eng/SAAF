@@ -32,6 +32,26 @@ const ServiceHubDetail: React.FC = () => {
   const [largeTextActive, setLargeTextActive] = useState(document.documentElement.classList.contains('large-text'));
   const [voiceActive, setVoiceActive] = useState(false);
 
+  // Advanced Features Hook States
+  const [votesState, setVotesState] = useState<Record<string, number>>({
+    '1': 18,
+    '2': 12,
+    '3': 8
+  });
+  const [userVotes, setUserVotes] = useState<Record<string, boolean>>({});
+
+  const [waterFlow, setWaterFlow] = useState(2.4);
+  const [reservoirCapacity, setReservoirCapacity] = useState(87);
+  const [flushActive, setFlushActive] = useState(false);
+
+  useEffect(() => {
+    if (serviceId !== 'water') return;
+    const interval = setInterval(() => {
+      setWaterFlow(prev => Math.max(1.0, Math.min(4.0, +(prev + (Math.random() * 0.4 - 0.2)).toFixed(1))));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [serviceId]);
+
   // Chat Bot States
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
@@ -688,6 +708,228 @@ STATUS VERIFIED: HIGH-HYGIENE COMPLIANCE`;
       navigate(`/public/map?view=${viewMap[serviceId || ''] || ''}`, { replace: true });
     }
   }, [serviceId]);
+
+  // STAFF AVAILABILITY SCREEN
+  if (serviceId === 'staff') {
+    return (
+      <div className="space-y-12 pb-24">
+         <div className="flex items-center gap-4">
+            <button onClick={() => navigate(-1)} className="p-3 bg-white border border-slate-200 rounded-2xl"><ArrowLeft size={20}/></button>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Staff Engine</h1>
+         </div>
+         
+         <div className="bg-slate-950 p-10 rounded-[3rem] text-white relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full" />
+            <div className="relative z-10 space-y-4">
+               <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em]">Live Telemetry</p>
+               <h2 className="text-4xl font-black tracking-tighter uppercase leading-none">Command Grid</h2>
+               <p className="text-slate-400 text-sm font-medium">Monitoring active municipal agents and tactical field operations in Dehradun.</p>
+               <div className="pt-6 border-t border-white/10 grid grid-cols-3 gap-4 text-center">
+                  <div className="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                     <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Active Duty</p>
+                     <p className="text-2xl font-black mt-1">12 / 15</p>
+                  </div>
+                  <div className="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                     <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Response Speed</p>
+                     <p className="text-2xl font-black mt-1">11 Mins</p>
+                  </div>
+                  <div className="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                     <p className="text-[9px] font-black text-purple-400 uppercase tracking-widest">Compliance</p>
+                     <p className="text-2xl font-black mt-1">99.4%</p>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <div className="space-y-6">
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest px-4">Tactical Operations Crew</h3>
+            <div className="grid grid-cols-1 gap-4">
+               {[
+                 { name: 'Amit Sharma', role: 'Lead Field Technician', status: 'ACTIVE', ward: 'Ward 4 - Clock Tower', avatar: 'AS' },
+                 { name: 'Priya Rawat', role: 'Bio-waste Expert', status: 'ON_DISPATCH', ward: 'Ward 12 - ISBT Node', avatar: 'PR' },
+                 { name: 'Sanjay Thapa', role: 'Emergency Plumber', status: 'STANDBY', ward: 'Ward 7 - Cantt Area', avatar: 'ST' },
+                 { name: 'Vikram Negi', role: 'Ward 4 General Supervisor', status: 'ACTIVE', ward: 'Command HQ', avatar: 'VN' }
+               ].map((staff, idx) => (
+                 <div key={idx} className="bg-white p-6 rounded-[2.5rem] border border-slate-100 flex items-center justify-between group hover:border-blue-500 transition-all shadow-sm">
+                    <div className="flex items-center gap-4">
+                       <div className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-sm tracking-tighter">
+                          {staff.avatar}
+                       </div>
+                       <div>
+                          <h4 className="text-base font-black text-slate-900 tracking-tight">{staff.name}</h4>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{staff.role} • {staff.ward}</p>
+                       </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                       <span className={`text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${
+                         staff.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-500' :
+                         staff.status === 'ON_DISPATCH' ? 'bg-blue-50 text-blue-500 animate-pulse' :
+                         'bg-amber-50 text-amber-500'
+                       }`}>
+                          {staff.status.replace('_', ' ')}
+                       </span>
+                    </div>
+                 </div>
+               ))}
+            </div>
+         </div>
+      </div>
+    );
+  }
+
+  // COMMUNITY VOTE SCREEN
+  if (serviceId === 'community') {
+    return (
+      <div className="space-y-12 pb-24">
+         <div className="flex items-center gap-4">
+            <button onClick={() => navigate(-1)} className="p-3 bg-white border border-slate-200 rounded-2xl"><ArrowLeft size={20}/></button>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Community Vote</h1>
+         </div>
+
+         <div className="bg-[#eff6ff] border border-blue-100 p-8 rounded-[2.5rem] space-y-4">
+            <div className="flex items-center gap-4">
+               <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center"><Users2 size={24}/></div>
+               <div>
+                  <h3 className="text-lg font-black text-slate-950 uppercase tracking-tight">Reduce Duplicate Noise</h3>
+                  <p className="text-xs text-slate-500 font-medium">Upvote existing issues in Dehradun. High-vote tickets get fast-tracked for instant dispatch.</p>
+               </div>
+            </div>
+         </div>
+
+         <div className="space-y-6">
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest px-4">Trending Local Reports</h3>
+            <div className="grid grid-cols-1 gap-6">
+               {[
+                 { id: '1', type: 'Dirty Facility Stall', desc: 'SBM Toilet hub requires deep scrubbing.', loc: 'ISBT Flyover Node' },
+                 { id: '2', type: 'Water Pressure Loss', desc: 'No water supply at handwash sinks.', loc: 'Clock Tower Toilet' },
+                 { id: '3', type: 'Bio-waste Overflow', desc: 'Bin overflowing near public entrance.', loc: 'Old Cantt Market' }
+               ].map((card, idx) => {
+                 const votes = votesState[card.id] || 0;
+                 const hasVoted = userVotes[card.id] || false;
+                 
+                 const triggerVote = () => {
+                   if (hasVoted) return;
+                   setVotesState(prev => ({ ...prev, [card.id]: (prev[card.id] || 0) + 1 }));
+                   setUserVotes(prev => ({ ...prev, [card.id]: true }));
+                   showToast(`Vote recorded for SAAF-00${card.id}!`, 'success');
+                 };
+
+                 return (
+                   <div key={idx} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 group hover:border-blue-500 transition-all">
+                      <div className="flex justify-between items-start">
+                         <div className="space-y-1">
+                            <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-2.5 py-1 rounded-full">{card.loc}</span>
+                            <h4 className="text-xl font-black text-slate-900 tracking-tight mt-2">{card.type}</h4>
+                         </div>
+                         <div className="text-right">
+                            <p className="text-2xl font-black text-slate-900 tracking-tighter">{votes}</p>
+                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Votes</p>
+                         </div>
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium leading-relaxed">{card.desc}</p>
+                      <button 
+                        onClick={triggerVote}
+                        className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
+                          hasVoted ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-500/20' : 'bg-slate-50 text-slate-900 hover:bg-blue-600 hover:text-white'
+                        }`}
+                      >
+                         {hasVoted ? '✓ Upvoted Report' : '▲ Upvote Report'}
+                      </button>
+                   </div>
+                 );
+               })}
+            </div>
+         </div>
+      </div>
+    );
+  }
+
+  // WATER MONITOR SCREEN
+  const triggerFlush = () => {
+    if (flushActive) return;
+    setFlushActive(true);
+    setReservoirCapacity(prev => Math.max(50, prev - 12));
+    showToast("Activating high-pressure solenoid flush...", "info");
+    if (voiceActive) speakText("Activating high pressure solenoid flush cycle.");
+
+    setTimeout(() => {
+      setFlushActive(false);
+      showToast("Flush cycle complete! Smart valve closed.", "success");
+      if (voiceActive) speakText("Flush cycle completed successfully.");
+      const refill = setInterval(() => {
+        setReservoirCapacity(prev => {
+          if (prev >= 87) {
+            clearInterval(refill);
+            return 87;
+          }
+          return prev + 2;
+        });
+      }, 500);
+    }, 3000);
+  };
+
+  if (serviceId === 'water') {
+    return (
+      <div className="space-y-12 pb-24">
+         <div className="flex items-center gap-4">
+            <button onClick={() => navigate(-1)} className="p-3 bg-white border border-slate-200 rounded-2xl"><ArrowLeft size={20}/></button>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Water Monitor</h1>
+         </div>
+
+         <div className="bg-gradient-to-br from-blue-900 to-slate-950 p-10 rounded-[3rem] text-white relative overflow-hidden shadow-2xl">
+            <div className="absolute inset-x-0 bottom-0 bg-blue-600/20 blur-xl rounded-t-full transition-all duration-1000" style={{ height: `${reservoirCapacity}%` }} />
+            
+            <div className="relative z-10 space-y-8">
+               <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                     <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">IoT Sanitation Node</p>
+                     <h2 className="text-3xl font-black tracking-tight uppercase leading-none">Reservoir Telemetry</h2>
+                  </div>
+                  <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-blue-400">
+                     <Droplets size={28} className={flushActive ? 'animate-bounce' : 'animate-pulse'} />
+                  </div>
+               </div>
+
+               <div className="grid grid-cols-2 gap-8 pt-6 border-t border-white/5">
+                  <div>
+                     <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Inflow Rate</p>
+                     <p className="text-4xl font-black mt-2 text-blue-300">{waterFlow} <span className="text-base font-normal">L/s</span></p>
+                  </div>
+                  <div>
+                     <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Reservoir Capacity</p>
+                     <p className="text-4xl font-black mt-2 text-emerald-400">{reservoirCapacity}%</p>
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+            <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Solenoid Smart Valves</h4>
+            <div className="relative h-20 bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden flex items-center justify-between px-8">
+               <div className="text-[9px] font-black text-slate-400 uppercase z-10">Main Inflow</div>
+               
+               <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                  <path d="M0,40 Q250,20 500,40 T1000,40" fill="none" stroke="#3b82f6" strokeWidth={flushActive ? 8 : 4} className={flushActive ? 'animate-[dash_1s_linear_infinite]' : 'animate-[dash_3s_linear_infinite]'} strokeDasharray="10,10" />
+               </svg>
+
+               <div className="text-[9px] font-black text-slate-400 uppercase z-10">SBM Outlet</div>
+            </div>
+            
+            <button 
+              onClick={triggerFlush}
+              disabled={flushActive}
+              className={`w-full py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all ${
+                flushActive 
+                  ? 'bg-blue-600 text-white shadow-blue-500/20 animate-pulse' 
+                  : 'bg-slate-950 text-white hover:bg-blue-600 shadow-slate-900/10 active:scale-95'
+              }`}
+            >
+               {flushActive ? 'Flushing System Stall...' : '⚡ Initiate Solenoid Flush'}
+            </button>
+         </div>
+      </div>
+    );
+  }
 
   // DEFAULT GENERIC FALLBACK
   return (

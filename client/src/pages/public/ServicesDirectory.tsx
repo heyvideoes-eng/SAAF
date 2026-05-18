@@ -58,10 +58,10 @@ const ServicesDirectory: React.FC = () => {
       title: 'Advanced Features',
       subtitle: 'Smart city utility modules',
       services: [
-        { id: 'staff', title: 'Staff Availability', desc: 'Live view of active maintenance teams.', icon: Users, path: '#', variant: 'soon' },
-        { id: 'analytics', title: 'Smart Analytics', desc: 'Trending problems in your city zone.', icon: BarChart2, path: '#', variant: 'soon' },
-        { id: 'community', title: 'Community Vote', desc: 'Upvote existing reports to reduce noise.', icon: Users2, path: '#', variant: 'soon' },
-        { id: 'water', title: 'Water Monitor', desc: 'Live tracking of facility water usage.', icon: Droplets, path: '#', variant: 'soon' },
+        { id: 'staff', title: 'Staff Availability', desc: 'Live view of active maintenance teams.', icon: Users, path: '/public/service-hub?id=staff', variant: 'soon' },
+        { id: 'analytics', title: 'Smart Analytics', desc: 'Trending problems in your city zone.', icon: BarChart2, path: '/public/service-hub?id=analytics', variant: 'soon' },
+        { id: 'community', title: 'Community Vote', desc: 'Upvote existing reports to reduce noise.', icon: Users2, path: '/public/service-hub?id=community', variant: 'soon' },
+        { id: 'water', title: 'Water Monitor', desc: 'Live tracking of facility water usage.', icon: Droplets, path: '/public/service-hub?id=water', variant: 'soon' },
       ]
     },
     {
