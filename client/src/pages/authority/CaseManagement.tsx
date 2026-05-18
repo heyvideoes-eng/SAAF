@@ -13,23 +13,57 @@ import {
 
 const CaseManagement: React.FC = () => {
   const [caseFilter, setCaseFilter] = React.useState<'ALL' | 'PENDING' | 'ACTIVE' | 'RESOLVED'>('ALL');
-
-  const cases = [
+  
+  const [caseList, setCaseList] = React.useState([
     { id: 'CAS-1024', title: 'Major Leak: Sector 4', worker: 'Rohan S.', status: 'IN_PROGRESS', time: '2h active', priority: 'URGENT' },
     { id: 'CAS-1025', title: 'Trash Overflow: Market', worker: 'Anita M.', status: 'ASSIGNED', time: '10m ago', priority: 'HIGH' },
     { id: 'CAS-1026', title: 'Odor Report: Central', worker: 'Unassigned', status: 'PENDING', time: '1h ago', priority: 'NORMAL' },
     { id: 'CAS-1027', title: 'Wall Graffiti: Park', worker: 'Suresh K.', status: 'COMPLETED', time: 'Finished', priority: 'LOW' },
-  ];
+  ]);
+
+  const [editingCase, setEditingCase] = React.useState<any | null>(null);
+  const [editWorker, setEditWorker] = React.useState('');
+  const [editPriority, setEditPriority] = React.useState('');
+  const [editStatus, setEditStatus] = React.useState('');
+
+  React.useEffect(() => {
+    if (editingCase) {
+      setEditWorker(editingCase.worker);
+      setEditPriority(editingCase.priority);
+      setEditStatus(editingCase.status);
+    }
+  }, [editingCase]);
+
+  const specialists = ['Rohan S.', 'Anita M.', 'Suresh K.', 'Priya N.', 'Amit P.', 'Unassigned'];
+  const priorities = ['URGENT', 'HIGH', 'NORMAL', 'LOW'];
+  const statuses = ['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED'];
+
+  const handleSaveChanges = () => {
+    if (!editingCase) return;
+    setCaseList(prev => prev.map(c => {
+      if (c.id === editingCase.id) {
+        return {
+          ...c,
+          worker: editWorker,
+          priority: editPriority,
+          status: editStatus,
+          time: editStatus === 'COMPLETED' ? 'Finished' : c.time === 'Finished' ? '10m ago' : c.time
+        };
+      }
+      return c;
+    }));
+    setEditingCase(null);
+  };
 
   const filteredCases = React.useMemo(() => {
-    if (caseFilter === 'ALL') return cases;
-    return cases.filter(c => {
+    if (caseFilter === 'ALL') return caseList;
+    return caseList.filter(c => {
       if (caseFilter === 'PENDING') return c.status === 'PENDING' || c.status === 'ASSIGNED';
       if (caseFilter === 'ACTIVE') return c.status === 'IN_PROGRESS';
       if (caseFilter === 'RESOLVED') return c.status === 'COMPLETED';
       return true;
     });
-  }, [caseFilter]);
+  }, [caseFilter, caseList]);
 
   return (
     <div className="space-y-10">
@@ -117,13 +151,113 @@ const CaseManagement: React.FC = () => {
                    }`} />
                    {c.status.replace('_', ' ')}
                 </div>
-                <button className="flex items-center gap-2 text-[10px] font-black text-blue-500 uppercase tracking-widest group-hover:gap-3 transition-all">
-                   Manage Case <ArrowRight size={14} />
-                </button>
-             </div>
+                 <button 
+                   onClick={() => setEditingCase(c)}
+                   className="flex items-center gap-2 text-[10px] font-black text-blue-500 uppercase tracking-widest group-hover:gap-3 transition-all hover:text-blue-400 focus:outline-none active:scale-95"
+                 >
+                    Manage Case <ArrowRight size={14} />
+                 </button>
+              </div>
+           </div>
+         ))}
+       </div>
+
+      {/* Premium Case Override & Management Portal Modal */}
+      {editingCase && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-6 transition-all duration-300">
+          <div className="bg-[#0f172a] border border-white/10 w-full max-w-lg rounded-[2.5rem] p-10 space-y-8 shadow-2xl relative overflow-hidden">
+            {/* Header Glowing Accent */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600/0 via-blue-600 to-blue-600/0" />
+            
+            {/* Header */}
+            <div>
+              <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em]">{editingCase.id} • CORE OVERRIDE</span>
+              <h2 className="text-2xl font-black text-white tracking-tighter mt-1">{editingCase.title}</h2>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Operational Governance & Field Reassignment</p>
+            </div>
+
+            <div className="space-y-6">
+              {/* Specialist Selector */}
+              <div className="space-y-3">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Assign Specialist Team</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {specialists.map(sp => (
+                    <button
+                      key={sp}
+                      onClick={() => setEditWorker(sp)}
+                      className={`py-2 px-3 rounded-xl text-[10px] font-bold border transition-all duration-300 focus:outline-none ${
+                        editWorker === sp
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20'
+                          : 'bg-black/30 border-white/5 text-slate-400 hover:text-white hover:border-white/20'
+                      }`}
+                    >
+                      {sp}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Priority Selector */}
+              <div className="space-y-3">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Criticality Index (Priority)</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {priorities.map(pr => (
+                    <button
+                      key={pr}
+                      onClick={() => setEditPriority(pr)}
+                      className={`py-2 px-1 rounded-xl text-[10px] font-bold border transition-all duration-300 focus:outline-none ${
+                        editPriority === pr
+                          ? pr === 'URGENT' ? 'bg-red-600 border-red-600 text-white shadow-lg shadow-red-500/20' :
+                            pr === 'HIGH' ? 'bg-amber-600 border-amber-600 text-white shadow-lg shadow-amber-500/20' :
+                            'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20'
+                          : 'bg-black/30 border-white/5 text-slate-400 hover:text-white hover:border-white/20'
+                      }`}
+                    >
+                      {pr}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Workflow Status Selector */}
+              <div className="space-y-3">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">System Integration Status</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {statuses.map(st => (
+                    <button
+                      key={st}
+                      onClick={() => setEditStatus(st)}
+                      className={`py-2.5 px-3 rounded-xl text-[10px] font-bold border transition-all duration-300 focus:outline-none ${
+                        editStatus === st
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20'
+                          : 'bg-black/30 border-white/5 text-slate-400 hover:text-white hover:border-white/20'
+                      }`}
+                    >
+                      {st.replace('_', ' ')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-4 pt-4 border-t border-white/5">
+              <button
+                onClick={() => setEditingCase(null)}
+                className="flex-1 py-4 bg-white/5 border border-white/5 hover:bg-white/10 hover:text-white transition-all duration-300 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 focus:outline-none active:scale-95"
+              >
+                Cancel Override
+              </button>
+              <button
+                onClick={handleSaveChanges}
+                className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 focus:outline-none active:scale-95"
+              >
+                Deploy Configuration
+              </button>
+            </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
