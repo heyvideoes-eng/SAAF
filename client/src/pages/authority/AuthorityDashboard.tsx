@@ -14,12 +14,39 @@ import {
 } from 'lucide-react';
 
 const AuthorityDashboard: React.FC = () => {
-  const kpis = [
-    { label: 'Overall City Compliance', value: '94.2%', change: '+1.2%', trend: 'UP', color: 'text-emerald-500' },
-    { label: 'Average Resolution Time', value: '1.4h', change: '-12m', trend: 'DOWN', color: 'text-blue-500' },
-    { label: 'Active Workforce', value: '124', change: '100% On-shift', trend: 'STABLE', color: 'text-amber-500' },
-    { label: 'Open Critical Cases', value: '12', change: '-4 since 8AM', trend: 'DOWN', color: 'text-red-500' },
-  ];
+  const [timeFilter, setTimeFilter] = React.useState<'24H' | '7D' | '30D' | 'ALL'>('24H');
+
+  const getFilteredKpis = () => {
+    const data: Record<'24H' | '7D' | '30D' | 'ALL', Array<{ label: string; value: string; change: string; trend: string; color: string }>> = {
+      '24H': [
+        { label: 'Overall City Compliance', value: '94.2%', change: '+1.2%', trend: 'UP', color: 'text-emerald-500' },
+        { label: 'Average Resolution Time', value: '1.4h', change: '-12m', trend: 'DOWN', color: 'text-blue-500' },
+        { label: 'Active Workforce', value: '124', change: '100% On-shift', trend: 'STABLE', color: 'text-amber-500' },
+        { label: 'Open Critical Cases', value: '12', change: '-4 since 8AM', trend: 'DOWN', color: 'text-red-500' },
+      ],
+      '7D': [
+        { label: 'Overall City Compliance', value: '91.8%', change: '+2.4%', trend: 'UP', color: 'text-emerald-500' },
+        { label: 'Average Resolution Time', value: '1.8h', change: '+15m', trend: 'UP', color: 'text-blue-500' },
+        { label: 'Active Workforce', value: '118', change: '95% Average', trend: 'STABLE', color: 'text-amber-500' },
+        { label: 'Open Critical Cases', value: '18', change: '+3 this week', trend: 'UP', color: 'text-red-500' },
+      ],
+      '30D': [
+        { label: 'Overall City Compliance', value: '89.5%', change: '-0.8%', trend: 'DOWN', color: 'text-emerald-500' },
+        { label: 'Average Resolution Time', value: '2.1h', change: '+45m', trend: 'UP', color: 'text-blue-500' },
+        { label: 'Active Workforce', value: '121', change: '98% Average', trend: 'STABLE', color: 'text-amber-500' },
+        { label: 'Open Critical Cases', value: '25', change: '+12 this month', trend: 'UP', color: 'text-red-500' },
+      ],
+      'ALL': [
+        { label: 'Overall City Compliance', value: '92.4%', change: 'Baseline', trend: 'STABLE', color: 'text-emerald-500' },
+        { label: 'Average Resolution Time', value: '1.9h', change: 'SLA Met', trend: 'STABLE', color: 'text-blue-500' },
+        { label: 'Active Workforce', value: '120', change: 'Full Strength', trend: 'STABLE', color: 'text-amber-500' },
+        { label: 'Open Critical Cases', value: '8', change: 'LTS Stable', trend: 'DOWN', color: 'text-red-500' },
+      ]
+    };
+    return data[timeFilter];
+  };
+
+  const kpis = getFilteredKpis();
 
   return (
     <div className="space-y-12">
@@ -32,7 +59,17 @@ const AuthorityDashboard: React.FC = () => {
         <div className="flex flex-wrap items-center gap-4">
            <div className="flex p-1 bg-white/5 rounded-xl border border-white/5">
               {['24H', '7D', '30D', 'ALL'].map(t => (
-                <button key={t} className={`px-4 py-1.5 rounded-lg text-[10px] font-black tracking-widest ${t === '24H' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-white transition-colors'}`}>{t}</button>
+                <button 
+                  key={t} 
+                  onClick={() => setTimeFilter(t as any)}
+                  className={`px-4 py-1.5 rounded-lg text-[10px] font-black tracking-widest transition-all duration-300 focus:outline-none ${
+                    timeFilter === t 
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                      : 'text-slate-500 hover:text-white transition-colors'
+                  }`}
+                >
+                  {t}
+                </button>
               ))}
            </div>
            <button className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all">

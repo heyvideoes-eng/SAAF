@@ -22,6 +22,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'overview'
   const [activeTab, setActiveTab] = useState<'overview' | 'audit' | 'users' | 'facilities'>(initialTab);
   const [data, setData] = useState<any>({ audit: [], users: [], facilities: [] });
   const [loading, setLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'STALE'>('ALL');
 
   const getApiUrl = () => {
     if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
@@ -56,6 +57,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'overview'
       setLoading(false);
     }
   };
+
+  const filteredData = React.useMemo(() => {
+    const list = data[activeTab] || [];
+    if (activeTab !== 'users') return list;
+    if (statusFilter === 'ACTIVE') return list.filter((u: any) => u.is_active === 1);
+    if (statusFilter === 'STALE') return list.filter((u: any) => u.is_active === 0);
+    return list;
+  }, [data, activeTab, statusFilter]);
 
   if (!hasPermission('SYSTEM', 'CONTROL')) {
     return (
@@ -96,7 +105,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'overview'
           <div className="flex flex-wrap items-center gap-4">
              <div className="flex p-1 bg-white/5 rounded-xl border border-white/5">
                 {['ALL', 'ACTIVE', 'STALE'].map(t => (
-                  <button key={t} className={`px-4 py-1.5 rounded-lg text-[10px] font-black tracking-widest ${t === 'ALL' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-white transition-colors'}`}>{t}</button>
+                  <button 
+                    key={t} 
+                    onClick={() => setStatusFilter(t as any)}
+                    className={`px-4 py-1.5 rounded-lg text-[10px] font-black tracking-widest transition-all duration-300 focus:outline-none ${
+                      statusFilter === t 
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                        : 'text-slate-500 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {t}
+                  </button>
                 ))}
              </div>
           </div>
@@ -126,7 +145,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'overview'
                           </tr>
                        </thead>
                        <tbody className="divide-y divide-white/5">
-                          {data[activeTab]?.length > 0 ? data[activeTab].map((row: any, i: number) => (
+                          {filteredData?.length > 0 ? filteredData.map((row: any, i: number) => (
                              <tr key={i} className="group hover:bg-white/[0.01] transition-colors cursor-pointer">
                                 <td className="px-10 py-8 font-bold text-blue-500">#{row.id || i+1}</td>
                                 <td className="px-10 py-8 text-sm font-bold text-white tracking-tight">
