@@ -51,6 +51,7 @@ export const getFacilityHealthSummary = async (facilityId: number) => {
   return {
     facility_id: facilityId,
     cleanliness_score: Math.round(score),
+    ammonia_avg: latestReading?.ammonia_level || 0,
     occupancy_rate: latestQueue ? latestQueue.current_users / 20 : 0, 
     queue_pressure: latestQueue?.pressure_level || 'LOW',
     last_cleaned_at: lastCleanedAt,

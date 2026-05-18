@@ -10,8 +10,8 @@ router.get('/recommendation', async (req, res) => {
   try {
     const facilities = db.prepare('SELECT * FROM facilities').all() as any[];
     
-    const candidates = facilities.map(f => {
-      const summary = getFacilityHealthSummary(f.id);
+    const candidates = (await Promise.all(facilities.map(async f => {
+      const summary = await getFacilityHealthSummary(f.id);
       
       // Simple heuristic for best facility
       const score = (summary.cleanliness_score * 0.5) - 
@@ -23,7 +23,7 @@ router.get('/recommendation', async (req, res) => {
         health: summary,
         score
       };
-    }).sort((a, b) => b.score - a.score);
+    }))).sort((a, b) => b.score - a.score);
 
     const best = candidates[0];
     let ai_insight = "Monitoring active.";
