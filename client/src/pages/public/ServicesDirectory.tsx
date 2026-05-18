@@ -68,9 +68,9 @@ const ServicesDirectory: React.FC = () => {
       title: 'Accessibility & Support',
       subtitle: 'Inclusive municipal services',
       services: [
-        { id: 'access', title: 'Accessibility UI', desc: 'Voice, contrast, and large text tools.', icon: Accessibility, path: '#', variant: 'utility' },
-        { id: 'lang', title: 'Multi-Language', desc: 'Platform support in regional languages.', icon: Languages, path: '#', variant: 'utility' },
-        { id: 'self', title: '24/7 Self-Service', desc: 'AI-driven routing and automated support.', icon: Zap, path: '/public', variant: 'utility' },
+        { id: 'access', title: 'Accessibility UI', desc: 'Voice, contrast, and large text tools.', icon: Accessibility, path: '/public/service-hub?id=access', variant: 'utility' },
+        { id: 'lang', title: 'Multi-Language', desc: 'Platform support in regional languages.', icon: Languages, path: '/public/service-hub?id=lang', variant: 'utility' },
+        { id: 'self', title: '24/7 Self-Service', desc: 'AI-driven routing and automated support.', icon: Zap, path: '/public/service-hub?id=self', variant: 'utility' },
       ]
     }
   ];
