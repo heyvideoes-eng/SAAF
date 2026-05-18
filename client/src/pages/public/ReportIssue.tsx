@@ -135,7 +135,7 @@ const ReportIssue: React.FC = () => {
                <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">SAAF Neural Ticket</p>
                   <p className="text-2xl font-black text-slate-950">
-                    {successMode === 'anonymous' ? `ENC-SEC-${Math.floor(1000 + Math.random() * 9000)}` : `SAAF-00${submittedId}`}
+                    {successMode === 'anonymous' ? `ENC-SEC-${submittedId}` : `SAAF-00${submittedId}`}
                   </p>
                </div>
                <span className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-2xl text-[10px] font-black uppercase tracking-widest">

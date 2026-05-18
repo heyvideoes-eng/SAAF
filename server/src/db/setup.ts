@@ -174,6 +174,8 @@ export const initDB = async () => {
       comment TEXT,
       photo_url TEXT,
       resolution_status TEXT DEFAULT 'OPEN',
+      lat REAL,
+      lng REAL,
       timestamp TEXT,
       FOREIGN KEY (facility_id) REFERENCES facilities(id)
     );
@@ -207,6 +209,10 @@ export const initDB = async () => {
       FOREIGN KEY (facility_id) REFERENCES facilities(id)
     );
   `);
+
+  // Retrofit lat/lng if not present in user_feedback
+  try { db.exec("ALTER TABLE user_feedback ADD COLUMN lat REAL;"); } catch (e) {}
+  try { db.exec("ALTER TABLE user_feedback ADD COLUMN lng REAL;"); } catch (e) {}
 
   console.log('✅ [SQLite] High-Integrity Schema Initialized');
   await seedMasterData();

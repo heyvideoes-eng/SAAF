@@ -99,8 +99,9 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Support both raw numeric ID and SAAF-ID-RAND format
-    const numericId = id.includes('-') ? id.split('-')[1] : id;
+    // Support both raw numeric ID, SAAF-00XXXX and ENC-SEC-XXXX formats
+    const rawId = id.includes('-') ? id.split('-').pop() : id;
+    const numericId = parseInt(rawId || '', 10);
 
     const feedback = db.prepare(`
       SELECT f.*, fac.name as facility_name, fac.location as facility_location
