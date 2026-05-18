@@ -1,0 +1,172 @@
+import cron from 'node-cron';
+import { db } from '../db/setup.js';
+import { supabase, isSupabaseConfigured } from '../db/supabase.js';
+import { io } from '../socket.js';
+
+export const initSensorJob = () => {
+  cron.schedule('*/10 * * * * *', () => {
+    console.log('Running sensor simulation...');
+    const facilities = db.prepare('SELECT * FROM facilities').all() as any[];
+
+    for (const facility of facilities) {
+      // 1. Randomly toggle stall occupancy
+      const stalls = db.prepare('SELECT * FROM stall_status WHERE facility_id = ?').all(facility.id) as any[];
+      for (const stall of stalls) {
+        if (Math.random() > 0.8) {
+          const newStatus = stall.is_occupied === 1 ? 0 : 1;
+          db.prepare('UPDATE stall_status SET is_occupied = ?, last_updated = ? WHERE id = ?')
+            .run(newStatus, new Date().toISOString(), stall.id);
+        }
+      }
+
+      // 2. Randomize sensor readings
+      const ammonia = Math.random() * 60; // 0-60 ppm
+      const humidity = 30 + Math.random() * 60; // 30-90%
+      const floor_wet = Math.random() > 0.95 ? 1 : 0;
+      const tissue = Math.max(0, (Math.random() > 0.9 ? 100 : (Math.random() * 100))); // occasional refill simulation
+      const soap = Math.max(0, (Math.random() > 0.9 ? 100 : (Math.random() * 100)));
+
+      db.prepare(`
+        INSERT INTO sensor_readings (facility_id, ammonia_level, humidity, floor_wet, flush_count, tissue_level, soap_level, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(facility.id, ammonia, humidity, floor_wet, 1, tissue, soap, new Date().toISOString());
+
+      if (isSupabaseConfigured()) {
+        supabase.from('sensor_readings').insert({
+          facility_id: facility.id,
+          ammonia_level: ammonia,
+          humidity,
+          floor_wet: !!floor_wet,
+          flush_count: 1,
+          tissue_level: tissue,
+          soap_level: soap
+        }).then(); // Fire and forget for speed
+      }
+
+      // 3. Compute Cleanliness Status
+      let status = 'GREEN';
+      let reason = 'All systems optimal';
+
+      if (ammonia > 50 || floor_wet === 1 || tissue < 15 || soap < 15) {
+        status = 'RED';
+        reason = ammonia > 50 ? 'Critical ammonia levels' : floor_wet === 1 ? 'Flooding detected' : 'Critical supplies low';
+      } else if (ammonia >= 20 || humidity >= 60 || tissue < 40 || soap < 40) {
+        status = 'AMBER';
+        reason = 'Attention required: check supplies or air quality';
+      }
+
+      const lastStatus = db.prepare('SELECT status FROM cleanliness_status WHERE facility_id = ? ORDER BY id DESC LIMIT 1').get(facility.id) as any;
+      
+      if (!lastStatus || lastStatus.status !== status) {
+        db.prepare('INSERT INTO cleanliness_status (facility_id, status, reason, updated_at) VALUES (?, ?, ?, ?)')
+          .run(facility.id, status, reason, new Date().toISOString());
+        
+        if (isSupabaseConfigured()) {
+          supabase.from('cleanliness_status').insert({
+            facility_id: facility.id,
+            status,
+            reason
+          }).then();
+        }
+
+        io.emit('status_change', {
+          facility_id: facility.id,
+          old_status: lastStatus?.status || 'UNKNOWN',
+          new_status: status,
+          reason
+        });
+      }
+
+      // 4. Update Rush Prediction (Mock AI logic)
+      if (Math.random() > 0.7) {
+        const surge = 10 + Math.random() * 20;
+        const confidence = 60 + Math.random() * 35;
+        db.prepare('INSERT INTO predicted_rush (facility_id, predicted_at, surge_in_mins, confidence_pct, source) VALUES (?, ?, ?, ?, ?)')
+          .run(facility.id, new Date().toISOString(), surge, confidence, 'Neural-Gateway-V1');
+
+        if (isSupabaseConfigured()) {
+          supabase.from('predicted_rush').insert({
+            facility_id: facility.id,
+            surge_in_mins: surge,
+            confidence_pct: confidence,
+            source: 'Neural-Gateway-V1'
+          }).then();
+        }
+      }
+
+      // 5. Update Queue
+      const occupiedStalls = stalls.filter(s => s.is_occupied === 1).length;
+      const currentUsers = occupiedStalls + Math.floor(Math.random() * 5);
+      const waitTime = (currentUsers / facility.total_stalls) * 5;
+      const pressure = waitTime > 4 ? 'HIGH' : waitTime > 2 ? 'MEDIUM' : 'LOW';
+
+      db.prepare('INSERT INTO crowd_queue (facility_id, current_users, wait_time_mins, pressure_level, timestamp) VALUES (?, ?, ?, ?, ?)')
+        .run(facility.id, currentUsers, waitTime, pressure, new Date().toISOString());
+
+      if (isSupabaseConfigured()) {
+        supabase.from('crowd_queue').insert({
+          facility_id: facility.id,
+          current_users: currentUsers,
+          wait_time_mins: waitTime,
+          pressure_level: pressure
+        }).then();
+      }
+
+      // 5. Emit Events
+      io.emit('sensor_update', {
+        facility_id: facility.id,
+        ammonia,
+        humidity,
+        floor_wet,
+        tissue_level: tissue,
+        soap_level: soap,
+        timestamp: new Date().toISOString()
+      });
+
+      io.emit('queue_update', {
+        facility_id: facility.id,
+        current_users: currentUsers,
+        wait_time: waitTime,
+        pressure_level: pressure
+      });
+
+      if (status === 'RED' || (tissue < 20) || (soap < 15)) {
+        const severity = status === 'RED' ? 'HIGH' : 'MEDIUM';
+        const taskReason = status === 'RED' ? 'Critical Sensor Reading' : 'Low Supplies';
+        
+        // Persist task in DB so it shows up for cleaners
+        const task = db.prepare(`
+          INSERT INTO maintenance_tasks (facility_id, status, priority, issue_reason, description, created_at)
+          SELECT ?, 'PENDING', ?, ?, ?, ?
+          WHERE NOT EXISTS (
+            SELECT 1 FROM maintenance_tasks 
+            WHERE facility_id = ? AND status IN ('PENDING', 'ASSIGNED', 'IN_PROGRESS') 
+            AND issue_reason = ?
+          )
+        `).run(facility.id, severity, taskReason, reason, new Date().toISOString(), facility.id, taskReason);
+
+        if (task.changes > 0) {
+          if (isSupabaseConfigured()) {
+            supabase.from('maintenance_tasks').insert({
+              facility_id: facility.id,
+              status: 'PENDING',
+              priority: severity,
+              issue_reason: taskReason,
+              description: reason
+            }).then();
+          }
+
+          io.emit('maintenance_alert', {
+            id: task.lastInsertRowid,
+            facility_id: facility.id,
+            facility_name: facility.name,
+            alert_type: status === 'RED' ? 'CRITICAL_CLEANLINESS' : 'SUPPLY_LOW',
+            message: reason,
+            severity,
+            timestamp: new Date().toISOString()
+          });
+        }
+      }
+    }
+  });
+};
