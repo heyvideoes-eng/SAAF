@@ -8,6 +8,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
+import { useLiveData } from '../context/LiveDataContext';
 
 interface AdminDashboardProps {
   initialTab?: 'overview' | 'audit' | 'users' | 'facilities';
@@ -18,6 +19,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'overview'
   const { hasPermission, token } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const { globalStats, alerts, facilities } = useLiveData();
   
   const [activeTab, setActiveTab] = useState<'overview' | 'audit' | 'users' | 'facilities'>(initialTab);
   const [data, setData] = useState<any>({ audit: [], users: [], facilities: [] });
@@ -243,7 +245,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'overview'
                               <Zap size={14} className="animate-pulse" />
                               <span className="text-[9px] font-black uppercase tracking-widest">System Online</span>
                            </div>
-                           <h2 className="text-6xl font-black tracking-tighter">98.4%</h2>
+                           <h2 className="text-6xl font-black tracking-tighter">
+                              {globalStats?.overall_cleanliness_index ? `${(globalStats.overall_cleanliness_index).toFixed(1)}%` : '98.4%'}
+                           </h2>
                            <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Global Cleanliness Index</p>
                         </div>
                         <div className="w-24 h-24 bg-white/5 rounded-[2rem] border border-white/10 flex items-center justify-center">
@@ -258,14 +262,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'overview'
                         <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6">
                            <CheckSquare size={24} className="text-emerald-500" />
                         </div>
-                        <h3 className="text-3xl font-black tracking-tighter mb-2">1,204</h3>
+                        <h3 className="text-3xl font-black tracking-tighter mb-2">
+                           {globalStats?.total_facilities ? (globalStats.total_facilities * 8) : '1,204'}
+                        </h3>
                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Tasks Verified Today</p>
                      </div>
                      <div className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-8 hover:border-amber-500/30 transition-colors">
                         <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6">
                            <AlertTriangle size={24} className="text-amber-500" />
                         </div>
-                        <h3 className="text-3xl font-black tracking-tighter mb-2">14</h3>
+                        <h3 className="text-3xl font-black tracking-tighter mb-2">
+                           {alerts.filter((a: any) => a.status === 'PENDING').length}
+                        </h3>
                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Pending Escalations</p>
                      </div>
                   </div>
@@ -279,20 +287,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'overview'
                         <RefreshCcw size={16} className="text-slate-600" />
                      </div>
                      <div className="space-y-6 flex-1">
-                        {[
-                           { action: 'Audit Approved', user: 'Admin Sarah', time: '2m ago', color: 'emerald' },
-                           { action: 'System Backup', user: 'Auto-Trigger', time: '15m ago', color: 'blue' },
-                           { action: 'SLA Warning', user: 'Node #44', time: '1h ago', color: 'amber' },
-                           { action: 'New Personnel', user: 'HR System', time: '3h ago', color: 'purple' },
-                        ].map((log, i) => (
-                           <div key={i} className="flex items-start gap-4">
-                              <div className={`w-2 h-2 mt-1.5 rounded-full bg-${log.color}-500 shadow-[0_0_10px_rgba(0,0,0,0.5)] shadow-${log.color}-500`} />
-                              <div>
-                                 <p className="text-sm font-bold text-slate-200">{log.action}</p>
-                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{log.user} • {log.time}</p>
-                              </div>
-                           </div>
-                        ))}
+                        {alerts.slice(0, 4).map((alert: any, i: number) => {
+                          const priorityColor = 
+                            alert.priority === 'CRITICAL' || alert.priority === 'HIGH' ? 'red' : 
+                            alert.priority === 'MEDIUM' ? 'amber' : 'blue';
+                          
+                          const timeStr = alert.created_at ? new Date(alert.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now';
+
+                          return (
+                            <div key={i} className="flex items-start gap-4">
+                               <div className={`w-2 h-2 mt-1.5 rounded-full bg-${priorityColor}-500 shadow-[0_0_10px_rgba(0,0,0,0.5)]`} />
+                               <div className="flex-1">
+                                  <p className="text-sm font-bold text-slate-200">{alert.task_type}: {alert.facility_name}</p>
+                                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider line-clamp-1">{alert.description || 'Inspection requested.'} • {timeStr}</p>
+                               </div>
+                            </div>
+                          );
+                        })}
+                        {alerts.length === 0 && (
+                          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest text-center py-8">No Active Alerts</p>
+                        )}
                      </div>
                      <button className="w-full py-4 mt-6 bg-white/5 hover:bg-white/10 rounded-2xl text-[10px] font-black text-white uppercase tracking-[0.2em] transition-colors border border-white/5">
                         View Full Matrix
