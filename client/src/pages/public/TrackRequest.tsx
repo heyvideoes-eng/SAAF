@@ -19,6 +19,7 @@ import {
   FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { API_URL } from '../../lib/api';
 
 const TrackRequest: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -38,7 +39,7 @@ const TrackRequest: React.FC = () => {
     setError('');
     setResult(null);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4001'}/api/feedback/${id}`);
+      const response = await fetch(`${API_URL}/api/feedback/${id}`);
       if (!response.ok) throw new Error('Request ID not found.');
       const data = await response.json();
       setResult(data);

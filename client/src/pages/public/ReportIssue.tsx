@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLiveData } from '../../context/LiveDataContext';
+import { API_URL } from '../../lib/api';
 
 const ReportIssue: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -52,8 +53,7 @@ const ReportIssue: React.FC = () => {
   };
 
   const getApiUrl = () => {
-    if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
-    return window.location.hostname === 'localhost' ? 'http://localhost:4001' : window.location.origin;
+    return API_URL;
   };
 
   const handleSubmitReport = async (e?: React.FormEvent, customData?: any) => {

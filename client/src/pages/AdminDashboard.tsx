@@ -27,8 +27,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'overview'
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'STALE'>('ALL');
 
   const getApiUrl = () => {
-    if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
-    return window.location.hostname === 'localhost' ? 'http://localhost:4001' : window.location.origin;
+    return API_URL;
   };
 
   useEffect(() => {

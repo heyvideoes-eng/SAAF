@@ -14,8 +14,8 @@ export const getApiURL = () => {
     return `http://localhost:4001`;
   }
 
-  // Priority 4: Production same-origin
-  return window.location.origin;
+  // Priority 4: Production Render Fallback
+  return 'https://saaf-backend.onrender.com';
 };
 
 export const API_URL = getApiURL();

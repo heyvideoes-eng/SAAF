@@ -10,6 +10,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLiveData } from '../../context/LiveDataContext';
 import { useToast } from '../../context/ToastContext';
+import { API_URL } from '../../lib/api';
 
 interface ChatMessage {
   sender: 'ai' | 'user';
@@ -49,8 +50,7 @@ const ServiceHubDetail: React.FC = () => {
   }, [chatMessages, chatLoading]);
 
   const getApiUrl = () => {
-    if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
-    return window.location.hostname === 'localhost' ? 'http://localhost:4001' : window.location.origin;
+    return API_URL;
   };
 
   // 1. ACCESSIBILITY TOGGLERS

@@ -10,10 +10,8 @@ const getSocketURL = () => {
     return `http://localhost:4001`;
   }
   
-  // In production, try to connect to the same origin
-  // Note: Standard Vercel Serverless won't support Socket.io, 
-  // but this ensures the URL is at least valid.
-  return window.location.origin;
+  // In production, try to connect to the deployed Render server
+  return 'https://saaf-backend.onrender.com';
 };
 
 const URL = getSocketURL();
