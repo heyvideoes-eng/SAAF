@@ -78,7 +78,7 @@ export const getGlobalKPIs = async () => {
 
       let avgResponse = 15;
       if (tasksRes.data && tasksRes.data.length > 0) {
-        const totalResponseTime = tasksRes.data.reduce((acc, task) => {
+        const totalResponseTime = tasksRes.data.reduce((acc: number, task: any) => {
           const start = new Date(task.created_at).getTime();
           const end = new Date(task.completed_at).getTime();
           return acc + (end - start) / 60000;
@@ -91,8 +91,8 @@ export const getGlobalKPIs = async () => {
         open_alerts: alertCount.count || 0,
         tasks_in_progress: progressCount.count || 0,
         avg_response_time_mins_today: Math.round(avgResponse * 10) / 10,
-        today_cost_inr: costRes.data?.reduce((acc, curr) => acc + curr.amount, 0) || 0,
-        total_users_last_24h: userRes.data?.reduce((acc, curr) => acc + curr.current_users, 0) || 0,
+        today_cost_inr: costRes.data?.reduce((acc: number, curr: any) => acc + curr.amount, 0) || 0,
+        total_users_last_24h: userRes.data?.reduce((acc: number, curr: any) => acc + curr.current_users, 0) || 0,
         overall_cleanliness_index: 85
       };
     } catch (e) {
