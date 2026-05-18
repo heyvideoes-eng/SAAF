@@ -12,12 +12,24 @@ import {
 } from 'lucide-react';
 
 const CaseManagement: React.FC = () => {
+  const [caseFilter, setCaseFilter] = React.useState<'ALL' | 'PENDING' | 'ACTIVE' | 'RESOLVED'>('ALL');
+
   const cases = [
     { id: 'CAS-1024', title: 'Major Leak: Sector 4', worker: 'Rohan S.', status: 'IN_PROGRESS', time: '2h active', priority: 'URGENT' },
     { id: 'CAS-1025', title: 'Trash Overflow: Market', worker: 'Anita M.', status: 'ASSIGNED', time: '10m ago', priority: 'HIGH' },
     { id: 'CAS-1026', title: 'Odor Report: Central', worker: 'Unassigned', status: 'PENDING', time: '1h ago', priority: 'NORMAL' },
     { id: 'CAS-1027', title: 'Wall Graffiti: Park', worker: 'Suresh K.', status: 'COMPLETED', time: 'Finished', priority: 'LOW' },
   ];
+
+  const filteredCases = React.useMemo(() => {
+    if (caseFilter === 'ALL') return cases;
+    return cases.filter(c => {
+      if (caseFilter === 'PENDING') return c.status === 'PENDING' || c.status === 'ASSIGNED';
+      if (caseFilter === 'ACTIVE') return c.status === 'IN_PROGRESS';
+      if (caseFilter === 'RESOLVED') return c.status === 'COMPLETED';
+      return true;
+    });
+  }, [caseFilter]);
 
   return (
     <div className="space-y-10">
@@ -27,12 +39,12 @@ const CaseManagement: React.FC = () => {
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-2">Internal Workflow & Task Distribution</p>
         </div>
         <div className="flex items-center gap-4">
-           <button className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400">
-              <Filter size={14} /> All Departments
-           </button>
-           <button className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-blue-700 transition-all">
-              Batch Actions
-           </button>
+            <button className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/5 hover:bg-white/10 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 focus:outline-none transition-all duration-300 active:scale-95">
+               <Filter size={14} /> All Departments
+            </button>
+            <button className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all duration-300 shadow-xl shadow-blue-600/20 focus:outline-none">
+               Batch Actions
+            </button>
         </div>
       </div>
 
@@ -43,16 +55,26 @@ const CaseManagement: React.FC = () => {
             <input type="text" placeholder="Search case by ID, worker name, or location..." className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-12 pr-6 text-xs text-white outline-none focus:border-blue-500/50" />
          </div>
          <div className="h-6 w-[1px] bg-white/5 hidden md:block" />
-         <div className="flex items-center gap-3">
-            {['PENDING', 'ACTIVE', 'RESOLVED'].map(s => (
-              <button key={s} className="px-4 py-2 rounded-lg text-[9px] font-black text-slate-500 hover:text-white transition-colors">{s}</button>
+         <div className="flex items-center gap-3 bg-black/20 p-1 rounded-xl border border-white/5">
+            {['ALL', 'PENDING', 'ACTIVE', 'RESOLVED'].map(s => (
+              <button 
+                key={s} 
+                onClick={() => setCaseFilter(s as any)}
+                className={`px-4 py-2 rounded-lg text-[9px] font-black transition-all duration-300 focus:outline-none ${
+                  caseFilter === s 
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                    : 'text-slate-500 hover:text-white transition-colors'
+                }`}
+              >
+                {s}
+              </button>
             ))}
          </div>
       </div>
 
       {/* Case Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        {cases.map((c, i) => (
+        {filteredCases.map((c, i) => (
           <div key={i} className="bg-[#0f172a] border border-white/5 rounded-[2rem] p-8 space-y-8 group hover:border-blue-500/30 transition-all shadow-2xl">
              <div className="flex justify-between items-start">
                 <div className="space-y-1">
